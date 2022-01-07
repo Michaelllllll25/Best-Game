@@ -19,10 +19,13 @@ FPS = 60
 # Game variables
 GRAVITY = 0.75         # Capital becuase I don't want it to change, constant variable
 
-
 # define player action variables
 moving_left = False
 moving_right = False
+
+# Load Images
+# Bullet
+bullet_img = pygame.image.load('img/icons/bullet.png').convert_alpha()
 
 # Define colours
 BG = (144, 201, 120)  # RGB values
@@ -31,8 +34,6 @@ RED = (255, 0, 0)
 def draw_bg():          # over rides anything that leaves a trail
     screen.fill(BG)   
     pygame.draw.line(screen, RED, (0, 300), (SCREEN_WIDTH, 300))
-
-
 
 class Soldier(pygame.sprite.Sprite):
     def __init__(self, char_type, x, y, scale, speed):
@@ -60,7 +61,7 @@ class Soldier(pygame.sprite.Sprite):
             # Count number of files in folder
             num_of_frames = len(os.listdir(f'img/{self.char_type}/{animation}'))
             for i in range(num_of_frames):      
-                img = pygame.image.load(f'img/{self.char_type}/{animation}/{i}.png')
+                img = pygame.image.load(f'img/{self.char_type}/{animation}/{i}.png').convert_alpha()
                 # Scale Image
                 img = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * scale)))
                 temp_list.append(img)
@@ -132,6 +133,20 @@ class Soldier(pygame.sprite.Sprite):
     def draw(self):
         screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
 
+class Bullet(pygame.sprite.Sprite):
+    def __init__(self, x, y, direction):
+        pygame.sprite.Sprite.__init__(self)
+        self.speed = 10
+        self.image = bullet_img
+        self.rect = self.image.get_rect()
+        self.rect.center = (x, y)
+        self.direction = direction
+
+# Create sprite groups
+bullet_group = pygame.sprite.Group()
+
+
+
 # create instance of player
 player = Soldier('player', 200, 200, 3, 5)
 enemy = Soldier('enemy', 400, 200, 3, 5)
@@ -144,6 +159,11 @@ while run:
     player.update_animation()
     player.draw()
     enemy.draw()
+
+    # Update and draw groups
+    bullet_group.update()
+    bullet_group.draw(screen)
+
 
     # Update player actions
     if player.alive:
@@ -167,6 +187,8 @@ while run:
                 moving_left = True
             if event.key == pygame.K_d:
                 moving_right = True
+            if event.key == pygame.K_SPACE:
+                moving_right = True                
             if event.key == pygame.K_w and player.alive:
                 player.jump = True
         # Keyboard released
