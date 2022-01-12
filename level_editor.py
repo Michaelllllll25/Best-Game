@@ -67,13 +67,13 @@ for tile in range(0, MAX_COLS):
 
 
 #function for outputting text onto the screen
-def draw_text(text, font, text_col, x, y):
+def draw_text(text: str, font: int, text_col: int, x: int, y: int) -> None:
 	img = font.render(text, True, text_col)
 	screen.blit(img, (x, y))
 
 
 #create function for drawing background
-def draw_bg():
+def draw_bg() -> None:
 	screen.fill(GREEN)
 	width = sky_img.get_width()
 	for x in range(4):
@@ -83,7 +83,7 @@ def draw_bg():
 		screen.blit(pine2_img, ((x * width) - scroll * 0.8, SCREEN_HEIGHT - pine2_img.get_height()))
 
 #draw grid
-def draw_grid():
+def draw_grid() -> None:
 	#vertical lines
 	for c in range(MAX_COLS + 1):
 		pygame.draw.line(screen, WHITE, (c * TILE_SIZE - scroll, 0), (c * TILE_SIZE - scroll, SCREEN_HEIGHT))
@@ -93,7 +93,7 @@ def draw_grid():
 
 
 #function for drawing the world tiles
-def draw_world():
+def draw_world() -> None:
 	for y, row in enumerate(world_data):
 		for x, tile in enumerate(row):
 			if tile >= 0:
@@ -218,3 +218,4 @@ while run:
 	pygame.display.update()
 
 pygame.quit()
+
