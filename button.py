@@ -11,6 +11,13 @@ class Button():
 		self.clicked = False
 
 	def draw(self, surface: str) -> bool:
+		"""Draws the button on the screen
+		
+		Args:
+			surface: draws the image
+			
+		Returns:
+			The action from then button pressed"""
 		action = False
 
 		#get mouse position
