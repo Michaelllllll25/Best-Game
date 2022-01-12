@@ -67,13 +67,25 @@ for tile in range(0, MAX_COLS):
 
 
 #function for outputting text onto the screen
-def draw_text(text: str, font: int, text_col: int, x: int, y: int) -> None:
+def draw_text(text: str, font: int, text_col: int, x: int, y: int) -> None:    
+	"""Renders the fonts on screen
+
+    Args:
+        text: text being drawn on screen
+        font: font of text
+        text_col: colour of text
+        x: x corordinate
+        y: y corordinate
+
+    Returns:
+	"""
 	img = font.render(text, True, text_col)
 	screen.blit(img, (x, y))
 
 
 #create function for drawing background
 def draw_bg() -> None:
+	"""Draws a background"""
 	screen.fill(GREEN)
 	width = sky_img.get_width()
 	for x in range(4):
@@ -84,6 +96,7 @@ def draw_bg() -> None:
 
 #draw grid
 def draw_grid() -> None:
+	"""Draws a grid"""
 	#vertical lines
 	for c in range(MAX_COLS + 1):
 		pygame.draw.line(screen, WHITE, (c * TILE_SIZE - scroll, 0), (c * TILE_SIZE - scroll, SCREEN_HEIGHT))
@@ -94,6 +107,7 @@ def draw_grid() -> None:
 
 #function for drawing the world tiles
 def draw_world() -> None:
+	"""Draws the overworld"""
 	for y, row in enumerate(world_data):
 		for x, tile in enumerate(row):
 			if tile >= 0:
