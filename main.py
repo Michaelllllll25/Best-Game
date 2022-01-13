@@ -3,12 +3,14 @@ import random
 import os   # Helps me see how many files are in a folder
 import csv   # backgrounds
 import button
+import button_potion
 
 pygame.init()
 
 # Game window
+BOTTOM_PANEL = 150
 SCREEN_WIDTH = 800
-SCREEN_HEIGHT = SCREEN_WIDTH * 0.8
+SCREEN_HEIGHT = SCREEN_WIDTH * 0.8 + BOTTOM_PANEL
 
 # Create game window
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -31,6 +33,8 @@ screen_scroll = 0
 bg_scroll = 0
 level = 1
 start_game = False
+potion = False
+potion_effect = 25
 
 # define player action variables
 moving_left = False
@@ -51,6 +55,11 @@ pine2_img = pygame.image.load('img/Background/pine2.png').convert_alpha()
 mountain_img = pygame.image.load('img/Background/mountain.png').convert_alpha()
 sky_img = pygame.image.load('img/Background/sky_cloud.png').convert_alpha()
 
+# Load potion
+potion_img = pygame.image.load('img/Icons/potion.png').convert_alpha()
+
+# Load Panel
+panel_img = pygame.image.load('img/Icons/panel.png').convert_alpha()
 
 # Store tiles in a list
 img_list = []
@@ -111,6 +120,12 @@ def draw_bg() -> None:          # over rides anything that leaves a trail
         screen.blit(pine1_img, ((x * width) - bg_scroll * 0.7, SCREEN_HEIGHT - pine1_img.get_height() - 150))
         screen.blit(pine2_img, ((x * width) - bg_scroll * 0.8, SCREEN_HEIGHT - pine2_img.get_height()))
 
+def draw_panel():   #
+	#draw panel rectangle
+	screen.blit(panel_img, (0, SCREEN_HEIGHT - BOTTOM_PANEL))
+
+
+
 # Function to reset level
 def reset_level() -> list:
     """Resets all groups once player is dead
@@ -121,6 +136,7 @@ def reset_level() -> list:
     Returns:
         A list of data 
     """
+    
     enemy_group.empty()
     bullet_group.empty()
     grenade_group.empty()
@@ -140,13 +156,15 @@ def reset_level() -> list:
 
 
 class Soldier(pygame.sprite.Sprite):
-    def __init__(self, char_type: str, x: int, y: int, scale: int, speed: int, ammo: int, grenades: int) -> None:
+    def __init__(self, char_type: str, x: int, y: int, scale: int, speed: int, ammo: int, grenades: int, potions: int) -> None:
         # Inheret functionality from the sprite class
         pygame.sprite.Sprite.__init__(self)
         self.alive = True
         self.char_type = char_type
         self.speed = speed
         self.ammo = ammo
+        self.start_potions = potions
+        self.potions = potions
         self.start_ammo = ammo
         self.shoot_cooldown = 0
         self.grenades = grenades
@@ -410,10 +428,10 @@ class World():
                         decoration_group.add(decoration) 
                     elif tile == 15:      # Create player
                         # create instance of player
-                        player = Soldier('player', x * TILE_SIZE, y * TILE_SIZE, 1.65, 5, 20, 5)
+                        player = Soldier('player', x * TILE_SIZE, y * TILE_SIZE, 1.65, 5, 20, 5, 3)
                         health_bar = HealthBar(10, 10, player.health, player.health)
                     elif tile == 16:    # Create enemies
-                        enemy = Soldier('enemy', x * TILE_SIZE, y * TILE_SIZE, 1.65, 2, 20, 0)
+                        enemy = Soldier('enemy', x * TILE_SIZE, y * TILE_SIZE, 1.65, 2, 20, 0, 0)
                         enemy_group.add(enemy)
                     elif tile == 17:   #  Create ammo box
                         item_box = ItemBox('Ammo', x * TILE_SIZE, y * TILE_SIZE)
@@ -638,10 +656,28 @@ class Explosion(pygame.sprite.Sprite):
             else:
                 self.image = self.images[self.frame_index]
 
+class DamageText(pygame.sprite.Sprite):
+	def __init__(self, x, y, damage, colour):
+		pygame.sprite.Sprite.__init__(self)
+		self.image = font.render(damage, True, colour)
+		self.rect = self.image.get_rect()
+		self.rect.center = (x, y)
+		self.counter = 0
+
+
+	def update(self):
+		#move damage text up
+		self.rect.y -= 1
+		#delete the text after a few seconds
+		self.counter += 1
+		if self.counter > 30:
+			self.kill()
+
 # Create buttons
 start_button = button.Button(SCREEN_WIDTH // 2 - 130, SCREEN_HEIGHT // 2 - 150, start_img, 1)
 exit_button = button.Button(SCREEN_WIDTH // 2 - 110, SCREEN_HEIGHT // 2 + 50, exit_img, 1)
 restart_button = button.Button(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 50, restart_img, 2)
+potion_button = button_potion.ButtonPotion(screen, 50, SCREEN_HEIGHT - BOTTOM_PANEL + 50, potion_img, 64, 64)
 
 
 # Create sprite groups
@@ -653,6 +689,7 @@ item_box_group  = pygame.sprite.Group()
 decoration_group  = pygame.sprite.Group()
 water_group  = pygame.sprite.Group()
 exit_group  = pygame.sprite.Group()
+
 
 
 # Create empty tile list
@@ -687,8 +724,11 @@ while run:
     else:
         # Update background
         draw_bg() 
+        
         # Draw world map
         world.draw()
+        #Draw panel
+        draw_panel()
         # Show player health
         health_bar.draw(player.health)
 
@@ -708,6 +748,13 @@ while run:
             enemy.ai()
             enemy.update()
             enemy.draw()
+        potion = False
+        if potion_button.draw():
+            potion = True
+            
+        #show number of potions remaining
+        draw_text(str(player.potions), font, RED, 100, SCREEN_HEIGHT - BOTTOM_PANEL + 50)
+
 
         # Update and draw groups
         bullet_group.update()
@@ -724,7 +771,7 @@ while run:
         item_box_group.draw(screen)
         decoration_group.draw(screen)
         water_group.draw(screen)
-        exit_group.draw(screen)
+        exit_group.draw(screen) 
 
 
         # Update player actions
@@ -740,6 +787,19 @@ while run:
                 # Reduce grenades
                 player.grenades -= 1
                 grenade_thrown = True
+            # potion
+            if potion == True:
+                if player.potions > 0:
+                    #check if the potion would heal the player beyond max health
+                    if player.max_health - player.health > potion_effect:
+                        heal_amount = potion_effect
+                    else:
+                        heal_amount = player.max_health - player.health
+                    player.health += heal_amount
+                    player.potions -= 1
+                    # damage_text = DamageText(player.rect.centerx, player.rect.y, str(heal_amount), green)
+                    # damage_text_group.add(damage_text)
+                    action_cooldown = 0
             if player.in_air:
                 player.update_action(2)        # 2: JUMP
             elif moving_left or moving_right:
