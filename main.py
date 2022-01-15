@@ -4,8 +4,33 @@ import os   # Helps me see how many files are in a folder
 import csv   # backgrounds
 import button
 import button_potion
+import json
 
 pygame.init()
+
+profile = {
+    "Name": "",
+    "Last name": "",
+    "Username": ""
+}
+
+print("[1] Login")
+print("[2] Sign-up")
+choice = int(input(">>>> "))
+if choice == 1:
+    username = input("Username: ")
+    print(f"Hello {username} and welcome to _________")
+elif choice == 2:
+    name = input("Name: ")
+    profile["Name"] = name
+    last_name = input("Last name: ")
+    profile["Last name"] = name
+    username = input("Username: ")
+    profile["Username"] = name
+    with open("jeff_info.json", "w") as f:
+        json.dump(profile, f, indent=4)     
+    print(f"Hello {username} and welcome to _________")
+
 
 # Game window
 BOTTOM_PANEL = 150
@@ -27,7 +52,7 @@ SCROLL_THRESH = 200    # distace player get to end of screen before it starts to
 ROWS = 16
 COLS = 150
 TILE_SIZE = SCREEN_HEIGHT // ROWS
-TILE_TYPES = 21
+TILE_TYPES = 24
 MAX_LEVELS = 2
 screen_scroll = 0
 bg_scroll = 0
@@ -78,11 +103,33 @@ grenade_img = pygame.image.load('img/icons/grenade.png').convert_alpha()
 health_box_img = pygame.image.load('img/icons/health_box.png').convert_alpha()
 ammo_box_img = pygame.image.load('img/icons/ammo_box.png').convert_alpha()
 grenade_box_img = pygame.image.load('img/icons/grenade_box.png').convert_alpha()
+
+# Pick up coins
+gold_img = pygame.image.load('img/icons/gold.png').convert_alpha()
+silver_img = pygame.image.load('img/icons/silver.png').convert_alpha()
+bronze_img = pygame.image.load('img/icons/bronze.png').convert_alpha()
+
 item_boxes = {
     'Health'    : health_box_img,
     'Ammo'      : ammo_box_img,
     'Grenade'   : grenade_box_img
 }
+
+coins = {
+    'Gold'      : gold_img,
+    'Silver'      : silver_img,
+    'Bronze'      : bronze_img
+}
+
+c = {
+    'gold': 1,
+    'silver': 2,
+    'bronze': 3
+}
+GOLD = 1
+SILVER = 2
+BRONZE = 3
+coins_collected = []
 
 # Define colours
 BG = (144, 201, 120)  # RGB values
@@ -94,16 +141,30 @@ BLACK = (0, 0, 0)
 # Define font
 font = pygame.font.SysFont('Futura', 30)
 
+def sort(coins_collected):
+    indexing_length = len(coins_collected) - 1
+    sorted = False
+
+    while not sorted:
+        sorted = True
+        for i in range(0, indexing_length):
+            if coins_collected[i] > coins_collected[i+1]:   # if item in list is greater than item to it's right
+                sorted = False
+                coins_collected[i], coins_collected[i+1] = coins_collected[i+1], coins_collected[i]
+                
+    print()
+    print("Sorted Medals:")
+    return coins_collected
+    
+
 def draw_text(text: str, font: str, text_col: str, x: int, y: int) -> None:
     """Renders the fonts on screen
-
     Args:
         text: text being drawn on screen
         font: font of text
         text_col: colour of text
         x: x corordinate
         y: y corordinate
-
     Returns:
     """
     img = font.render(text, True, text_col)
@@ -124,15 +185,20 @@ def draw_panel():   #
 	#draw panel rectangle
 	screen.blit(panel_img, (0, SCREEN_HEIGHT - BOTTOM_PANEL))
 
+def draw_gold():
+	screen.blit(gold_img, (150, 680))
 
+def draw_silver():
+	screen.blit(silver_img, (210, 680))
+
+def draw_bronze():
+	screen.blit(bronze_img, (270, 680))
 
 # Function to reset level
 def reset_level() -> list:
     """Resets all groups once player is dead
-
     Args:
         None
-
     Returns:
         A list of data 
     """
@@ -145,6 +211,9 @@ def reset_level() -> list:
     decoration_group.empty()
     water_group.empty()
     exit_group.empty()
+    coin_box_group.empty()
+    coins_collected_group.empty()
+
 
     # Create empty tile list
     data = []
@@ -216,11 +285,9 @@ class Soldier(pygame.sprite.Sprite):
 
     def move(self, moving_left: int, moving_right: int) -> int:
         """Determines player's position
-
         Args:
             moving_left: position if player moved left
             moving_right: position if player moved left
-
         Returns:
             When screen should scroll and when level is complete
         """
@@ -279,6 +346,7 @@ class Soldier(pygame.sprite.Sprite):
         # Check for colision with exit
         level_complete = False
         if pygame.sprite.spritecollide(self, exit_group, False):
+            draw_text(f"Coins Collected: {coins_collected}", font, WHITE, 430,  SCREEN_HEIGHT - BOTTOM_PANEL + 30)
             level_complete = True        
 
         # Check if fell off map
@@ -369,10 +437,8 @@ class Soldier(pygame.sprite.Sprite):
 
     def update_action(self, new_action: int) -> None:
         """Updates actions
-
         Args:
             new_action: player's action
-
         Returns:
         """
         # Check if the new action is different to the previous one
@@ -399,12 +465,13 @@ class World():
     def __init__(self) -> None:
         self.obstacal_list = []
 
+    def draw_gold():
+        screen.blit(gold_img, (150, 680))
+
     def process_data(self, data: list) -> int:
         """Processes the data that loads the world
-
         Args:
             data: list of items to load into world
-
         Returns:
             The player and it's health bar
         """
@@ -442,7 +509,16 @@ class World():
                     elif tile == 19:   #  Create health box
                         item_box = ItemBox('Health', x * TILE_SIZE, y * TILE_SIZE)
                         item_box_group.add(item_box)
-                    elif tile == 20:   # create exit
+                    elif tile == 20:   #  Create Bronze coin
+                        coin_box = Coins('Bronze', x * TILE_SIZE, y * TILE_SIZE)
+                        coin_box_group.add(coin_box)
+                    elif tile == 21:   #  Create Silver coin
+                        coin_box = Coins('Silver', x * TILE_SIZE, y * TILE_SIZE)
+                        coin_box_group.add(coin_box)
+                    elif tile == 22:   #  Create Gold coin
+                        coin_box = Coins('Gold', x * TILE_SIZE, y * TILE_SIZE)
+                        coin_box_group.add(coin_box)
+                    elif tile == 23:   # create exit
                         exit = Exit(img, x * TILE_SIZE, y * TILE_SIZE)
                         exit_group.add(exit) 
         return player, health_bar
@@ -494,7 +570,7 @@ class ItemBox(pygame.sprite.Sprite):
         self.image = item_boxes[self.item_type]
         self.rect = self.image.get_rect()
         self.rect.midtop = (x + TILE_SIZE // 2, y + (TILE_SIZE - self.image.get_height()))
-
+    
     def update(self) -> None:
         """Updates item boxes"""
         # Scroll
@@ -516,6 +592,37 @@ class ItemBox(pygame.sprite.Sprite):
             # Delete item box
             self.kill()
 
+class Coins(pygame.sprite.Sprite):
+    def __init__(self, coin_type: str, x: int, y: int) -> None:
+        pygame.sprite.Sprite.__init__(self)
+        self.coin_type = coin_type
+        self.image = coins[self.coin_type]
+        self.rect = self.image.get_rect()
+        self.rect.midtop = (x + TILE_SIZE // 2, y + (TILE_SIZE - self.image.get_height()))
+
+    def update(self) -> None:
+        """Updates item boxes"""
+        # Scroll
+        self.rect.x += screen_scroll
+        # Check if player has picked up box
+        if pygame.sprite.collide_rect(self, player):
+            # Check which kind of box was picked up
+            if self.coin_type == 'Bronze':
+                coins_collected.append(BRONZE)
+                print(sort(coins_collected))
+            elif self.coin_type == 'Silver':
+                coins_collected.append(SILVER)
+                print(sort(coins_collected))
+            if self.coin_type == 'Gold':
+                coins_collected.append(GOLD)
+                print(sort(coins_collected))
+            # Delete item box
+            self.kill()
+
+        
+    def draw(self):
+        pygame.draw.rect(screen, gold_img, (self.x - 2, self.y - 2, 154, 22))
+
 class HealthBar():
     def __init__(self, x: int, y: int, health: int, max_health: int) -> None:
         self.x = x
@@ -525,14 +632,12 @@ class HealthBar():
 
     def draw(self, health: int) -> None:
         """Draws health bar
-
         Args:
             health: player health
-
         Returns:
         """
         # Update with new health
-        self.health = health\
+        self.health = health
         # Calcuate health ratio
         ratio = self.health / self.max_health
         pygame.draw.rect(screen, BLACK, (self.x - 2, self.y - 2, 154, 24))      # Boarder
@@ -656,22 +761,23 @@ class Explosion(pygame.sprite.Sprite):
             else:
                 self.image = self.images[self.frame_index]
 
-class DamageText(pygame.sprite.Sprite):
-	def __init__(self, x, y, damage, colour):
-		pygame.sprite.Sprite.__init__(self)
-		self.image = font.render(damage, True, colour)
-		self.rect = self.image.get_rect()
-		self.rect.center = (x, y)
-		self.counter = 0
+# class DamageText(pygame.sprite.Sprite):
+# 	def __init__(self, x, y, damage, colour):
+# 		pygame.sprite.Sprite.__init__(self)
+# 		self.image = font.render(damage, True, colour)
+# 		self.rect = self.image.get_rect()
+# 		self.rect.center = (x, y)
+# 		self.counter = 0
 
 
-	def update(self):
-		#move damage text up
-		self.rect.y -= 1
-		#delete the text after a few seconds
-		self.counter += 1
-		if self.counter > 30:
-			self.kill()
+# 	def update(self):
+# 		#move damage text up
+# 		self.rect.y -= 1
+# 		#delete the text after a few seconds
+# 		self.counter += 1
+# 		if self.counter > 30:
+# 			self.kill()
+
 
 # Create buttons
 start_button = button.Button(SCREEN_WIDTH // 2 - 130, SCREEN_HEIGHT // 2 - 150, start_img, 1)
@@ -689,6 +795,9 @@ item_box_group  = pygame.sprite.Group()
 decoration_group  = pygame.sprite.Group()
 water_group  = pygame.sprite.Group()
 exit_group  = pygame.sprite.Group()
+coin_box_group  = pygame.sprite.Group()
+coins_collected_group  = pygame.sprite.Group()
+
 
 
 
@@ -707,11 +816,12 @@ with open(f'level{level}_data.csv', newline='') as csvfile:
 world = World()
 player, health_bar = world.process_data(world_data)
 
+
 run = True
 while run: 
 
     clock.tick(FPS)
-    
+
     if start_game == False:
         # Draw menu
         screen.fill(BG)       
@@ -729,6 +839,14 @@ while run:
         world.draw()
         #Draw panel
         draw_panel()
+
+        if 1 in coins_collected:
+            draw_gold()
+        if 2 in coins_collected:
+            draw_silver()
+        if 3 in coins_collected:
+            draw_bronze()
+
         # Show player health
         health_bar.draw(player.health)
 
@@ -752,9 +870,10 @@ while run:
         if potion_button.draw():
             potion = True
             
-        #show number of potions remaining
+        # Draw text
         draw_text(str(player.potions), font, RED, 100, SCREEN_HEIGHT - BOTTOM_PANEL + 50)
-
+        draw_text("Sorted Medals:", font, WHITE, 430, SCREEN_HEIGHT - BOTTOM_PANEL + 30)
+        draw_text(str(coins_collected), font, WHITE, 590, SCREEN_HEIGHT - BOTTOM_PANEL + 30)
 
         # Update and draw groups
         bullet_group.update()
@@ -764,6 +883,8 @@ while run:
         decoration_group.update()
         water_group.update()
         exit_group.update()
+        coin_box_group.update()
+        coins_collected_group.update()
 
         bullet_group.draw(screen)
         grenade_group.draw(screen)
@@ -772,6 +893,8 @@ while run:
         decoration_group.draw(screen)
         water_group.draw(screen)
         exit_group.draw(screen) 
+        coin_box_group.draw(screen)
+        coins_collected_group.draw(screen)
 
 
         # Update player actions
@@ -820,7 +943,7 @@ while run:
                         reader = csv.reader(csvfile, delimiter=',')  #delimiter tells where each value changes to another (every comma)
                         for x, row in enumerate(reader):  # gives individual row
                             for y, tile in enumerate(row):     # as it iterates it keeps a running count of where we are in the iteration
-                                world_data[x][y] = int(tile)   # update world_data with each indivitual tile
+                                world_data[x][y] = int(tile)   # update world_data with each individual tile
                     world = World()
                     player, health_bar = world.process_data(world_data)
 
@@ -867,7 +990,6 @@ while run:
             if event.key == pygame.K_q:
                 grenade = False 
                 grenade_thrown = False
-
 
     # Update game window
     pygame.display.update()
