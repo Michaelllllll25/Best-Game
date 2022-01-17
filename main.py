@@ -36,7 +36,6 @@ elif choice == 2:
 BOTTOM_PANEL = 150
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = SCREEN_WIDTH * 0.8 + BOTTOM_PANEL
-
 # Create game window
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 # Title
@@ -52,7 +51,7 @@ SCROLL_THRESH = 200    # distace player get to end of screen before it starts to
 ROWS = 16
 COLS = 150
 TILE_SIZE = SCREEN_HEIGHT // ROWS
-TILE_TYPES = 24
+TILE_TYPES = 25
 MAX_LEVELS = 2
 screen_scroll = 0
 bg_scroll = 0
@@ -60,6 +59,7 @@ level = 1
 start_game = False
 potion = False
 potion_effect = 25
+score = 0
 
 # define player action variables
 moving_left = False
@@ -213,7 +213,7 @@ def reset_level() -> list:
     exit_group.empty()
     coin_box_group.empty()
     coins_collected_group.empty()
-
+    mini_coin_group.empty()
 
     # Create empty tile list
     data = []
@@ -518,9 +518,13 @@ class World():
                     elif tile == 22:   #  Create Gold coin
                         coin_box = Coins('Gold', x * TILE_SIZE, y * TILE_SIZE)
                         coin_box_group.add(coin_box)
-                    elif tile == 23:   # create exit
+                    elif tile == 23:   #  Create Gold coin
+                        mini_coin = MiniCoin(x * TILE_SIZE, y * TILE_SIZE)
+                        mini_coin_group.add(mini_coin)
+                    elif tile == 24:   # create exit
                         exit = Exit(img, x * TILE_SIZE, y * TILE_SIZE)
                         exit_group.add(exit) 
+                    
         return player, health_bar
 
     def draw(self) -> None:
@@ -592,8 +596,24 @@ class ItemBox(pygame.sprite.Sprite):
             # Delete item box
             self.kill()
 
+class MiniCoin(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        pygame.sprite.Sprite.__init__(self)
+        img = pygame.image.load('img/Icons/coin.png')
+        self.image = pygame.transform.scale(img, (TILE_SIZE // 2, TILE_SIZE // 2))
+        self.rect = self.image.get_rect()
+        self.rect.center = (x, y)   
+
+    def update(self) -> None:
+        """Updates item boxes"""
+        # Scroll
+        self.rect.x += screen_scroll
+        # Check if player has picked up box
+        if pygame.sprite.collide_rect(self, player):
+            self.kill()
+
 class Coins(pygame.sprite.Sprite):
-    def __init__(self, coin_type: str, x: int, y: int) -> None:
+    def __init__(self, coin_type: str,x: int, y: int) -> None:
         pygame.sprite.Sprite.__init__(self)
         self.coin_type = coin_type
         self.image = coins[self.coin_type]
@@ -616,10 +636,11 @@ class Coins(pygame.sprite.Sprite):
             if self.coin_type == 'Gold':
                 coins_collected.append(GOLD)
                 print(sort(coins_collected))
-            # Delete item box
+            # Delete coin
             self.kill()
 
-        
+
+  
     def draw(self):
         pygame.draw.rect(screen, gold_img, (self.x - 2, self.y - 2, 154, 22))
 
@@ -761,22 +782,6 @@ class Explosion(pygame.sprite.Sprite):
             else:
                 self.image = self.images[self.frame_index]
 
-# class DamageText(pygame.sprite.Sprite):
-# 	def __init__(self, x, y, damage, colour):
-# 		pygame.sprite.Sprite.__init__(self)
-# 		self.image = font.render(damage, True, colour)
-# 		self.rect = self.image.get_rect()
-# 		self.rect.center = (x, y)
-# 		self.counter = 0
-
-
-# 	def update(self):
-# 		#move damage text up
-# 		self.rect.y -= 1
-# 		#delete the text after a few seconds
-# 		self.counter += 1
-# 		if self.counter > 30:
-# 			self.kill()
 
 
 # Create buttons
@@ -795,9 +800,9 @@ item_box_group  = pygame.sprite.Group()
 decoration_group  = pygame.sprite.Group()
 water_group  = pygame.sprite.Group()
 exit_group  = pygame.sprite.Group()
-coin_box_group  = pygame.sprite.Group()
-coins_collected_group  = pygame.sprite.Group()
-
+coin_box_group = pygame.sprite.Group()
+coins_collected_group = pygame.sprite.Group()
+mini_coin_group = pygame.sprite.Group()
 
 
 
@@ -846,6 +851,11 @@ while run:
             draw_silver()
         if 3 in coins_collected:
             draw_bronze()
+        
+        score
+        if pygame.sprite.spritecollide(player, mini_coin_group, True):
+            score += 1
+        draw_text(str(score), font, WHITE, 590, SCREEN_HEIGHT - BOTTOM_PANEL + 60)
 
         # Show player health
         health_bar.draw(player.health)
@@ -885,6 +895,9 @@ while run:
         exit_group.update()
         coin_box_group.update()
         coins_collected_group.update()
+        mini_coin_group.update()
+
+
 
         bullet_group.draw(screen)
         grenade_group.draw(screen)
@@ -895,6 +908,9 @@ while run:
         exit_group.draw(screen) 
         coin_box_group.draw(screen)
         coins_collected_group.draw(screen)
+        mini_coin_group.draw(screen)
+
+        # Check score
 
 
         # Update player actions
@@ -950,6 +966,7 @@ while run:
         else:
             screen_scroll = 0
             if restart_button.draw(screen):   # if clicked
+                score = 0                                    
                 bg_scroll = 0                 # reset variables
                 world_data = reset_level()    
                 # Load new level data and create world
@@ -995,7 +1012,5 @@ while run:
     pygame.display.update()
 
 pygame.quit()
-
-
 
 
