@@ -11,7 +11,8 @@ pygame.init()
 profile = {
     "Name": "",
     "Last name": "",
-    "Username": ""
+    "Username": "",
+    "High Score": ""
 }
 
 print("[1] Login")
@@ -19,16 +20,18 @@ print("[2] Sign-up")
 choice = int(input(">>>> "))
 if choice == 1:
     username = input("Username: ")
-    print(f"Hello {username} and welcome to _________")
+    if username in profile['Username']:
+        print(f"Hello {username} and welcome to _________")
+    else:
+        print("False")
+
 elif choice == 2:
     name = input("Name: ")
     profile["Name"] = name
     last_name = input("Last name: ")
-    profile["Last name"] = name
+    profile["Last name"] = last_name
     username = input("Username: ")
-    profile["Username"] = name
-    with open("jeff_info.json", "w") as f:
-        json.dump(profile, f, indent=4)     
+    profile["Username"] = username  
     print(f"Hello {username} and welcome to _________")
 
 
@@ -852,10 +855,11 @@ while run:
         if 3 in coins_collected:
             draw_bronze()
         
-        score
+        # score
         if pygame.sprite.spritecollide(player, mini_coin_group, True):
             score += 1
         draw_text(str(score), font, WHITE, 590, SCREEN_HEIGHT - BOTTOM_PANEL + 60)
+
 
         # Show player health
         health_bar.draw(player.health)
@@ -966,6 +970,12 @@ while run:
         else:
             screen_scroll = 0
             if restart_button.draw(screen):   # if clicked
+                if choice == 1 and username in profile["Username"]:
+                    if score > profile['High Score']:
+                        print("ok")
+                profile['High Score'] = score
+                with open("accounts.json", "a") as f:
+                    json.dump(profile, f, indent=4) 
                 score = 0                                    
                 bg_scroll = 0                 # reset variables
                 world_data = reset_level()    
