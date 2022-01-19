@@ -12,19 +12,23 @@ profile = {
     "Name": "",
     "Last name": "",
     "Username": "",
-    "High Score": ""
+    "High Score": 0
 }
+
+with open("accounts.json", "r") as f:
+    profs = json.load(f)
+
 
 print("[1] Login")
 print("[2] Sign-up")
 choice = int(input(">>>> "))
 if choice == 1:
     username = input("Username: ")
-    # if "Username" in profile:
-    print("Key exist")
-    print(f"Hello {username} and welcome to _________")
-    # else:
-    #     print("False")
+    if username in profs['Username']:
+    # if username in profile['Username']:
+        print(f"Hello {username} and welcome to _________")
+    else:
+        print("False")
 
 elif choice == 2:
     name = input("Name: ")
@@ -35,6 +39,8 @@ elif choice == 2:
     profile["Username"] = username  
     print(f"Hello {username} and welcome to _________")
 
+    # profs.append(profile)
+    # print(profs)
 
 # Game window
 BOTTOM_PANEL = 150
@@ -971,12 +977,17 @@ while run:
         else:
             screen_scroll = 0
             if restart_button.draw(screen):   # if clicked
-                if choice == 1 and username in profile["Username"]:
-                    if score > profile['High Score']:
-                        print("ok")
+                # if choice == 1 and username in profile["Username"]:
+                #     if score > profile['High Score']:
+                #         print("ok")
                 profile['High Score'] = score
-                with open("accounts.json", "a") as f:
-                    json.dump(profile, f, indent=4) 
+                profs.append(profile)
+                with open("accounts.json", "a") as f:      # write in json
+                    json.dump(profs, f, indent=4) 
+                with open("accounts.json", "w") as f:
+                    profs = json.dump(profs, f, indent=4)
+                with open("accounts.json", "r") as f:
+                    profs = json.load(f)
                 score = 0                                    
                 bg_scroll = 0                 # reset variables
                 world_data = reset_level()    
@@ -1023,6 +1034,5 @@ while run:
     pygame.display.update()
 
 pygame.quit()
-
 
 
