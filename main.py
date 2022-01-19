@@ -20,10 +20,11 @@ print("[2] Sign-up")
 choice = int(input(">>>> "))
 if choice == 1:
     username = input("Username: ")
-    if username in profile['Username']:
-        print(f"Hello {username} and welcome to _________")
-    else:
-        print("False")
+    # if "Username" in profile:
+    print("Key exist")
+    print(f"Hello {username} and welcome to _________")
+    # else:
+    #     print("False")
 
 elif choice == 2:
     name = input("Name: ")
@@ -1022,5 +1023,6 @@ while run:
     pygame.display.update()
 
 pygame.quit()
+
 
 
