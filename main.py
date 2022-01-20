@@ -12,61 +12,8 @@ profile = {
     "Name": "",
     "Last name": "",
     "Username": "",
-    "High Score": 0
+    "High score": 0
 }
-
-
-# for i in range(len(favourite_three_franchises)):
-#     if favourite_three_franchises[i]["Name"] == 'Call of Duty':
-#         print(f'Units Sold: {favourite_three_franchises[i]["Units Sold"]} million')
-
-
-
-    # indexing_length = len(coins_collected) - 1
-    # sorted = False
-
-    # while not sorted:
-    #     sorted = True
-    #     for i in range(0, indexing_length):
-    #         if coins_collected[i] > coins_collected[i+1]:   # if item in list is greater than item to it's right
-    #             sorted = False
-    #             coins_collected[i], coins_collected[i+1] = coins_collected[i+1], coins_collected[i]
-                
-    # print()
-    # print("Sorted Medals:")
-    # return coins_collected
-with open("accounts.json", "r") as f:
-    profs = json.load(f)
-
-def sort_scores(profs):
-    pass
-
-with open("accounts.json", "r") as f:
-    profs = json.load(f)
-
-print("[1] Login")
-print("[2] Sign-up")
-choice = int(input(">>>> "))
-if choice == 1:
-    user = input("Username: ")
-    for i in range(len(profs)):
-        if profs[i]['Username'] == user:
-            high_score = profs[i]['High Score']
-            print(f"Current High Score: {high_score}")
-        # else:
-            # print("False")
-
-elif choice == 2:
-    name = input("Name: ")
-    profile["Name"] = name
-    last_name = input("Last name: ")
-    profile["Last name"] = last_name
-    username = input("Username: ")
-    profile["Username"] = username  
-    print(f"Hello {username} and welcome to _________")
-
-    # profs.append(profile)
-    # print(profs)
 
 # Game window
 BOTTOM_PANEL = 150
@@ -259,6 +206,114 @@ def reset_level() -> list:
     
     return data
 
+class Profile():
+    def __init__(self, name, last_name, username):
+        self._name = name
+        self._last_name = last_name
+        self._username = username
+
+    def __str__(self) -> str:
+            return f"Hello {self._name} {self._last_name} aka {self._username}"
+
+    def get_name(self) -> str:
+        return self._name
+
+    def set_name(self, name: str) -> None:
+        if len(name) > 50:
+            raise ValueError("Names can't exceed 50 characters")
+        self._name = name
+
+    def get_last_name(self) -> int:
+        return self._last_name
+
+    def set_last_name(self, last_name: str) -> None:
+        if last_name > 50:
+            raise ValueError("Must be positive")
+        self._last_name = last_name
+
+    def get_username(self) -> int:
+        return self._contents
+
+    def set_username(self, username: int) -> None:
+        if username > self._username:
+            raise ValueError("Names can't exceed 50 characters")
+        elif username < 1:
+            raise ValueError("Names must be greater than 1 characters")
+        self._username = username
+
+leader_board_username = []
+leader_board_highscore = []
+
+with open("accounts.json", "r") as f:
+    profs = json.load(f)
+
+    for user in profs:
+        leader_board_username.append(user['Username'])
+        leader_board_highscore.append(user['High score'])
+        
+print()
+print("Usernames: ", leader_board_username)
+print("Scores: ", leader_board_highscore)
+
+
+def sort_leaderboard(leader_board_highscore):
+    indexing_length = len(leader_board_highscore) - 1
+    sorted = False
+
+    while not sorted:
+        sorted = True
+        for i in range(0, indexing_length):
+            if leader_board_highscore[i] > leader_board_highscore[i+1]:   # if item in list is greater than item to it's right
+                sorted = False
+                leader_board_highscore[i], leader_board_highscore[i+1] = leader_board_highscore[i+1], leader_board_highscore[i]
+                
+    print()
+    return leader_board_highscore
+
+sort_leaderboard(leader_board_highscore)
+print("Sorted Scores: ", leader_board_highscore)
+print()
+print("Leaderboard:")
+
+for i in range(len(profs)):
+    if profs[i]['High score'] == leader_board_highscore[-1]:
+        print("First:", profs[i]['Username'], "-------->", profs[i]['High score'])
+for i in range(len(profs)):
+    if profs[i]['High score'] == leader_board_highscore[-2]:
+        print("Second:", profs[i]['Username'], "-------->", profs[i]['High score'])
+for i in range(len(profs)):
+    if profs[i]['High score'] == leader_board_highscore[-3]:
+        print("Third:", profs[i]['Username'], "-------->", profs[i]['High score'])
+print()
+
+
+
+with open("accounts.json", "r") as f:
+    profs = json.load(f)
+
+
+print("[1] Login")
+print("[2] Sign-up")
+choice = int(input(">>>> "))
+if choice == 1:
+    user = input("Username: ")
+    for i in range(len(profs)):
+        if profs[i]['Username'] == user:
+            high_score = profs[i]['High score']
+            print(f"Current High Score: {high_score}")
+        # else:
+            # print("False")
+
+elif choice == 2:
+    name = input("Name: ")
+    profile["Name"] = name
+    last_name = input("Last name: ")
+    profile["Last name"] = last_name
+    username = input("Username: ")
+    profile["Username"] = username  
+    pp = Profile(name, last_name, username)
+    print(pp)
+    print(f"Hello {username} and welcome to _________")
 
 class Soldier(pygame.sprite.Sprite):
     def __init__(self, char_type: str, x: int, y: int, scale: int, speed: int, ammo: int, grenades: int, potions: int) -> None:
@@ -1007,11 +1062,11 @@ while run:
                     if score > high_score:
                         for i in range(len(profs)):
                             if profs[i]['Username'] == user:
-                                profs[i]['High Score'] = score
-                    # if score > profile['High Score']:
+                                profs[i]['High score'] = score
+                    # if score > profile['High score']:
                     #     print("ok")
                 elif choice == 2:
-                    profile['High Score'] = score
+                    profile['High score'] = score
                     profs.append(profile)
                 with open("accounts.json", "a") as f:      # write in json
                     json.dump(profs, f, indent=4) 
