@@ -15,20 +15,46 @@ profile = {
     "High Score": 0
 }
 
+
+# for i in range(len(favourite_three_franchises)):
+#     if favourite_three_franchises[i]["Name"] == 'Call of Duty':
+#         print(f'Units Sold: {favourite_three_franchises[i]["Units Sold"]} million')
+
+
+
+    # indexing_length = len(coins_collected) - 1
+    # sorted = False
+
+    # while not sorted:
+    #     sorted = True
+    #     for i in range(0, indexing_length):
+    #         if coins_collected[i] > coins_collected[i+1]:   # if item in list is greater than item to it's right
+    #             sorted = False
+    #             coins_collected[i], coins_collected[i+1] = coins_collected[i+1], coins_collected[i]
+                
+    # print()
+    # print("Sorted Medals:")
+    # return coins_collected
 with open("accounts.json", "r") as f:
     profs = json.load(f)
 
+def sort_scores(profs):
+    pass
+
+with open("accounts.json", "r") as f:
+    profs = json.load(f)
 
 print("[1] Login")
 print("[2] Sign-up")
 choice = int(input(">>>> "))
 if choice == 1:
-    username = input("Username: ")
-    if username in profs['Username']:
-    # if username in profile['Username']:
-        print(f"Hello {username} and welcome to _________")
-    else:
-        print("False")
+    user = input("Username: ")
+    for i in range(len(profs)):
+        if profs[i]['Username'] == user:
+            high_score = profs[i]['High Score']
+            print(f"Current High Score: {high_score}")
+        # else:
+            # print("False")
 
 elif choice == 2:
     name = input("Name: ")
@@ -165,7 +191,7 @@ def sort(coins_collected):
     print()
     print("Sorted Medals:")
     return coins_collected
-    
+ 
 
 def draw_text(text: str, font: str, text_col: str, x: int, y: int) -> None:
     """Renders the fonts on screen
@@ -977,11 +1003,16 @@ while run:
         else:
             screen_scroll = 0
             if restart_button.draw(screen):   # if clicked
-                # if choice == 1 and username in profile["Username"]:
-                #     if score > profile['High Score']:
-                #         print("ok")
-                profile['High Score'] = score
-                profs.append(profile)
+                if choice == 1:
+                    if score > high_score:
+                        for i in range(len(profs)):
+                            if profs[i]['Username'] == user:
+                                profs[i]['High Score'] = score
+                    # if score > profile['High Score']:
+                    #     print("ok")
+                elif choice == 2:
+                    profile['High Score'] = score
+                    profs.append(profile)
                 with open("accounts.json", "a") as f:      # write in json
                     json.dump(profs, f, indent=4) 
                 with open("accounts.json", "w") as f:
@@ -1034,5 +1065,4 @@ while run:
     pygame.display.update()
 
 pygame.quit()
-
 
