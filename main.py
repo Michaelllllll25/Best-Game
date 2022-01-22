@@ -124,6 +124,8 @@ BLACK = (0, 0, 0)
 # Define font
 font = pygame.font.SysFont('Futura', 30)
 
+##################################################################################### Sort (top)
+
 def sort(coins_collected):
     indexing_length = len(coins_collected) - 1
     sorted = False
@@ -139,6 +141,7 @@ def sort(coins_collected):
     print("Sorted Medals:")
     return coins_collected
  
+##################################################################################### Sort (bottom)
 
 def draw_text(text: str, font: str, text_col: str, x: int, y: int) -> None:
     """Renders the fonts on screen
@@ -206,6 +209,17 @@ def reset_level() -> list:
     
     return data
 
+################################################################ Inheritance / some encapsulation (top)
+
+
+
+
+
+################################################################ Inheritance/ some encapsulation (bottom)
+
+
+################################################################ Encapsulation (top)
+
 class Profile():
     def __init__(self, name, last_name, username):
         self._name = name
@@ -232,7 +246,7 @@ class Profile():
         self._last_name = last_name
 
     def get_username(self) -> int:
-        return self._contents
+        return self._username
 
     def set_username(self, username: int) -> None:
         if username > self._username:
@@ -241,68 +255,126 @@ class Profile():
             raise ValueError("Names must be greater than 1 characters")
         self._username = username
 
+################################################################ Encapsulation (bottom)
+
+
+#################################################################################### Filter (top)
+
 leader_board_username = []
-leader_board_highscore = []
+filter_leader_board_highscore = []
+
+#################################################################################### json (top)
 
 with open("accounts.json", "r") as f:
     profs = json.load(f)
 
     for user in profs:
         leader_board_username.append(user['Username'])
-        leader_board_highscore.append(user['High score'])
-        
+        filter_leader_board_highscore.append(user['High score'])
+
+#################################################################################### json (bottom)
+
 print()
 print("Usernames: ", leader_board_username)
-print("Scores: ", leader_board_highscore)
+print("Scores: ", filter_leader_board_highscore)
 
+#################################################################################### sorting (top)
 
-def sort_leaderboard(leader_board_highscore):
-    indexing_length = len(leader_board_highscore) - 1
+def sort_leaderboard(filter_leader_board_highscore):
+    indexing_length = len(filter_leader_board_highscore) - 1
     sorted = False
 
     while not sorted:
         sorted = True
         for i in range(0, indexing_length):
-            if leader_board_highscore[i] > leader_board_highscore[i+1]:   # if item in list is greater than item to it's right
+            if filter_leader_board_highscore[i] > filter_leader_board_highscore[i+1]:   # if item in list is greater than item to it's right
                 sorted = False
-                leader_board_highscore[i], leader_board_highscore[i+1] = leader_board_highscore[i+1], leader_board_highscore[i]
+                filter_leader_board_highscore[i], filter_leader_board_highscore[i+1] = filter_leader_board_highscore[i+1], filter_leader_board_highscore[i]
                 
-    print()
-    return leader_board_highscore
+    return filter_leader_board_highscore
 
-sort_leaderboard(leader_board_highscore)
-print("Sorted Scores: ", leader_board_highscore)
+#################################################################################### sorting (bottom)
+
+sort_leaderboard(filter_leader_board_highscore)
+print("Sorted Scores: ", filter_leader_board_highscore)
 print()
 print("Leaderboard:")
 
 for i in range(len(profs)):
-    if profs[i]['High score'] == leader_board_highscore[-1]:
+    if profs[i]['High score'] == filter_leader_board_highscore[-1]:
         print("First:", profs[i]['Username'], "-------->", profs[i]['High score'])
 for i in range(len(profs)):
-    if profs[i]['High score'] == leader_board_highscore[-2]:
+    if profs[i]['High score'] == filter_leader_board_highscore[-2]:
         print("Second:", profs[i]['Username'], "-------->", profs[i]['High score'])
 for i in range(len(profs)):
-    if profs[i]['High score'] == leader_board_highscore[-3]:
+    if profs[i]['High score'] == filter_leader_board_highscore[-3]:
         print("Third:", profs[i]['Username'], "-------->", profs[i]['High score'])
 print()
 
+#################################################################################### Filter (bottom)
 
 
-with open("accounts.json", "r") as f:
-    profs = json.load(f)
+
+#################################################################################### Binary Search (top)
+world_scores = [ 2, 3, 4, 4, 6, 9, 12, 13, 13, 20, 22, 66, 88, 99, 110, 122, 166, 199, 200, 220, 233, 266, 300]
+managers_high_score = 22
+
+#################################################################################### filtering (top)
+
+filtered = []
+for world_score in world_scores:
+    if world_score >= 100:
+        filtered.append(world_score)
+
+print("Score that are 100+")
+print(filtered)
+print()
+
+#################################################################################### filtering (bottom)
+
+# Returns index of creators_high_score in list if present, else -1
+def binary_search(world_scores, low, high, creators_high_score):
+    # Check base case
+    if high >= low:
+        mid = (high + low) // 2
+        # If element is present at the middle itself
+        if world_scores[mid] == creators_high_score:
+            return mid
+        # If element is smaller than mid, then it can only be left side of mid
+        elif world_scores[mid] > creators_high_score:
+            return binary_search(world_scores, low, mid - 1, creators_high_score)
+        # Else the element can only be present in right side of mid
+        else:
+            return binary_search(world_scores, mid + 1, high, creators_high_score)
+    else:
+        # Element is not present in the list
+        return -1
+ 
+
+result = binary_search(world_scores, 0, len(world_scores)-1, managers_high_score)
+number_of_people = result 
+if result != -1:
+    print(f"The manager's score is better than {number_of_people} people")
+    print()
+else:
+    print("Element is not present in the list")
+
+#################################################################################### Binary Search (bottom)
+
 
 
 print("[1] Login")
 print("[2] Sign-up")
 choice = int(input(">>>> "))
 if choice == 1:
-    user = input("Username: ")
+    with open("accounts.json", "r") as f:
+        profs = json.load(f)
+    current_user = input("Username: ")
     for i in range(len(profs)):
-        if profs[i]['Username'] == user:
+        if profs[i]['Username'] == current_user:
             high_score = profs[i]['High score']
             print(f"Current High Score: {high_score}")
-        # else:
-            # print("False")
+
 
 elif choice == 2:
     name = input("Name: ")
@@ -313,7 +385,7 @@ elif choice == 2:
     profile["Username"] = username  
     pp = Profile(name, last_name, username)
     print(pp)
-    print(f"Hello {username} and welcome to _________")
+    print(f"Hello {username}, thanks for signing up")
 
 class Soldier(pygame.sprite.Sprite):
     def __init__(self, char_type: str, x: int, y: int, scale: int, speed: int, ammo: int, grenades: int, potions: int) -> None:
@@ -378,7 +450,7 @@ class Soldier(pygame.sprite.Sprite):
         """Determines player's position
         Args:
             moving_left: position if player moved left
-            moving_right: position if player moved left
+            moving_right: position if player moved right
         Returns:
             When screen should scroll and when level is complete
         """
@@ -530,7 +602,6 @@ class Soldier(pygame.sprite.Sprite):
         """Updates actions
         Args:
             new_action: player's action
-        Returns:
         """
         # Check if the new action is different to the previous one
         if new_action != self.action:
@@ -551,6 +622,40 @@ class Soldier(pygame.sprite.Sprite):
         """Draws soldier"""
         screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
         # pygame.draw.rect(screen, RED, self.rect, 1)          # draws rect boarder
+
+class Creators:
+    def __init__(self, name, username):
+        self._name = name
+        self._username = username
+        self._email = name + '.' + username + '@email.com'
+
+    def fullname(self):
+        return '{} {}'.format(self._name, self._username)
+
+class Developer(Creators):
+    def __init__(self, name, username, language):
+        super().__init__(name, username)
+        self.language = language
+
+class Manager(Creators):
+    def __init__(self, name, username, employees=None):
+        super().__init__(name, username)
+        if employees is None:
+            self.employees = []
+        else:
+            self.employees = employees
+
+    def add_emp(self, emp):
+        if emp not in self.employees:
+            self.employees.append(emp)
+
+    def remove_emp(self, emp):
+        if emp in self.employees:
+            self.employees.remove(emp)
+
+    def print_emps(self):
+        for emp in self.employees:
+            print('Username', emp.fullname())
 
 class World():
     def __init__(self) -> None:
@@ -905,7 +1010,7 @@ for row in range(ROWS):
 print(world_data)
 # Load in level data and create world
 with open(f'level{level}_data.csv', newline='') as csvfile:
-    reader = csv.reader(csvfile, delimiter=',')  #delimiter tells where each value changes to another (every comma)
+    reader = csv.reader(csvfile, delimiter=',')  # delimiter tells where each value changes to another (every comma)
     for x, row in enumerate(reader):  # gives individual row
         for y, tile in enumerate(row):     # as it iterates it keeps a running count of where we are in the iteration
             world_data[x][y] = int(tile)
@@ -913,6 +1018,21 @@ world = World()
 player, health_bar = world.process_data(world_data)
 
 
+developer1 = Developer('Michael', 'The_mistrol','Python')
+developer2 = Developer('Thomas', 'ThomasTheTrain','Python')
+developer3 = Developer('Nick', 'Nik', 'Python')
+
+manager1 = Manager('Jack', 'Jackinator1', [developer1])
+print()
+print("Creators")
+print(f"Manager 1: {manager1._name} | {manager1._username} | {manager1._email}")
+print()
+print(f"Developer 1: {developer1._name} | {developer1._username} | {developer1._email}")
+print(f"Developer 2: {developer2._name} | {developer2._username} | {developer2._email}")
+print(f"Developer 3: {developer3._name} | {developer3._username} | {developer3._email}")
+
+manager1.add_emp(developer2)
+manager1.add_emp(developer3)
 run = True
 while run: 
 
@@ -1061,19 +1181,25 @@ while run:
                 if choice == 1:
                     if score > high_score:
                         for i in range(len(profs)):
-                            if profs[i]['Username'] == user:
+                            if profs[i]['Username'] == current_user:
                                 profs[i]['High score'] = score
                     # if score > profile['High score']:
                     #     print("ok")
                 elif choice == 2:
                     profile['High score'] = score
                     profs.append(profile)
+
+#################################################################################### json (top)
+
                 with open("accounts.json", "a") as f:      # write in json
                     json.dump(profs, f, indent=4) 
                 with open("accounts.json", "w") as f:
                     profs = json.dump(profs, f, indent=4)
                 with open("accounts.json", "r") as f:
                     profs = json.load(f)
+
+#################################################################################### json (bottom)
+
                 score = 0                                    
                 bg_scroll = 0                 # reset variables
                 world_data = reset_level()    
@@ -1120,4 +1246,3 @@ while run:
     pygame.display.update()
 
 pygame.quit()
-
