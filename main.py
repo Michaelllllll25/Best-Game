@@ -210,10 +210,57 @@ def reset_level() -> list:
     return data
 
 ################################################################ Inheritance / some encapsulation (top)
+class Creators:
+    def __init__(self, name, username):
+        self._name = name
+        self._username = username
+        self._email = name + '.' + username + '@email.com'
+
+    def fullname(self):
+        return '{} {}'.format(self._name, self._username)
+
+class Developer(Creators):
+    def __init__(self, name, username, language):
+        super().__init__(name, username)
+        self.language = language
+
+class Manager(Creators):
+    def __init__(self, name, username, employees=None):
+        super().__init__(name, username)
+        if employees is None:
+            self.employees = []
+        else:
+            self.employees = employees
+
+    def add_emp(self, emp):
+        if emp not in self.employees:
+            self.employees.append(emp)
+
+    def remove_emp(self, emp):
+        if emp in self.employees:
+            self.employees.remove(emp)
+
+    def print_emps(self):
+        for emp in self.employees:
+            print('Username', emp.fullname())
 
 
+developer1 = Developer('Michael', 'The_mistrol','Python')
+developer2 = Developer('Thomas', 'ThomasTheTrain','Python')
+developer3 = Developer('Nick', 'Nik', 'Python')
 
+manager1 = Manager('Jack', 'Jackinator1', [developer1])
 
+print()
+print("Creators")
+print(f"Manager 1: {manager1._name} | {manager1._username} | {manager1._email}")
+print()
+print(f"Developer 1: {developer1._name} | {developer1._username} | {developer1._email}")
+print(f"Developer 2: {developer2._name} | {developer2._username} | {developer2._email}")
+print(f"Developer 3: {developer3._name} | {developer3._username} | {developer3._email}")
+
+manager1.add_emp(developer2)
+manager1.add_emp(developer3)
 
 ################################################################ Inheritance/ some encapsulation (bottom)
 
